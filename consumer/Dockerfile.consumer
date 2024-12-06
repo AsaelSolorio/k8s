@@ -1,0 +1,21 @@
+# Use Python 3.10
+FROM python:3.10-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy requirements.txt
+COPY ./requirements.txt /app/requirements.txt
+
+# Copy the main application file (e.g., app.py)
+COPY ./consumer/app.py /app/app.py
+COPY ./consumer/access_log_parser.py /app/access_log_parser.py
+
+# Install dependencies
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+
+# Expose the port Faust will listen on (if applicable, e.g., for a web interface)
+EXPOSE 6066
+
+# Command to run the Faust worker
+CMD ["faust", "-A", "app", "worker", "-l", "info"]

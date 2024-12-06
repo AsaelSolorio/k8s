@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-deployment
+spec:
+  replicas: 1  # Number of pods to run
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: consumer
+        image: your-consumer-image:latest  # Your consumer container image
+        command:
+          - "python"
+          - "consumer.py"  # Or the command that starts your consumer service
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /app/access-logs  # The path where the logs are mounted inside the consumer pod
+      volumes:
+      - name: shared-volume
+        persistentVolumeClaim:
+          claimName: shared-pvc

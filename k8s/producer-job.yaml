@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: producer-job
+spec:
+  backoffLimit: 0  # Do not retry if the job fails
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: producer
+          image: producer-stream:1.0.0  # Ensure this image is pushed to your Docker registry
+          volumeMounts:
+            - name: access-logs
+              mountPath: /mnt/data   # Path inside container where logs will be written
+          command: ["sh", "-c", "timeout 30 python /app/apache-fake-log-gen.py -n 0 --sleep 0.2 | tee /mnt/data/access_$(date +%s).log"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      restartPolicy: Never
+      volumes:
+        - name: access-logs
+          persistentVolumeClaim:
+            claimName: shared-pvc  # Ensure PVC is created

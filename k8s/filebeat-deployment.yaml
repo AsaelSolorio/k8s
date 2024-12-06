@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filebeat-deployment
+spec:
+  replicas: 1  # One replica of Filebeat
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:8.3.3
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /var/log/apache2  # Same shared volume as the consumer
+        # Optional: configure Filebeat to forward logs to Kafka or Elasticsearch
+        env:
+        - name: FILEBEAT_KAFKA_OUTPUT
+          value: "kafka://kafka-service:9093"  # Example Kafka output
+      volumes:
+      - name: shared-volume
+        persistentVolumeClaim:
+          claimName: shared-pvc
